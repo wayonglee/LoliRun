@@ -1,5 +1,7 @@
 #include "Stage.h"
 #include "Player.h"
+#include "Road.h"
+#include "Enemy.h"
 
 USING_NS_CC;
 
@@ -20,33 +22,28 @@ bool Stage::init()
 		return false;
 	}
 	size = 10;
-	setData(108.0f,126.0f,80.0f);
+	setData(108.0f,126.0f);
 	addRoad();
 	return true;
 }
 
-void Stage::setData(float sw,float sh,float ph)
+void Stage::setData(float sw,float sh)
 {
 	spriteWidth = sw;
 	spriteHeight = sh;
-	platformHeight = ph;
 }
 
 void Stage::addRoad()
 {
-	int a[] = {2,2,2,2,-1,-1,2,2,-1,2};
-	emptyRoad = Sprite::create();
-	emptyRoad->retain();
+	int a[] = {2,2,2,2,-1,-1,2,2,2,2};
 	for(int i=0;i<size;i++)
 	{
+		auto road = Road::create();
 		if(a[i]>0)
 		{
-			const char* roadName = String::createWithFormat("road_%d.png",a[i])->getCString();
-			auto road = Sprite::create(roadName,Rect(0,0,spriteWidth,spriteHeight));
-			road->setAnchorPoint(Vec2(0.5,0));
-			roads.insert(i,road);
+			road->setImage(a[i],spriteWidth,spriteHeight);
 		}
-		else roads.insert(i,emptyRoad);
+		roads.insert(i,road);
 	}
 }
 
@@ -54,7 +51,7 @@ void Stage::addStage(Layer* layer,Vec2 pos)
 {
 	for(int i=0;i<size;i++)
 	{
-		if(roads.at(i)!=emptyRoad)
+		if(!roads.at(i)->empty)
 		{
 			roads.at(i)->setPosition(roads.at(i)->getContentSize().width/2+roads.at(i)->getContentSize().width*i+pos.x,pos.y);
 			layer->addChild(roads.at(i));
@@ -68,21 +65,42 @@ bool Stage::checkPlayerAbove()
 {
 	Player* loli = (Player*)Director::getInstance()->getRunningScene()->getChildByTag(1)->getChildByTag(1);
 	Vec2 lolip = loli->getPosition();
-	/*if(loli->getCurState()==JUMP||loli->getCurState()==DROP)
+	if(loli->getCurState()==JUMPDROP||loli->getCurState()==DROP)
 	{
 		for(int i=0;i<size;i++)
 		{
-			if(roads.at(i)!=emptyRoad)
-				if(roads.at(i)->getBoundingBox().containsPoint(lolip)&&lolip.x<=platformHeight+startPos.y)
+			if(!roads.at(i)->empty)
+				if(roads.at(i)->checkPlayerLand(lolip))
+				{
+					loli->setStateChangeable(true);
 					loli->changeState(WALK);
+					loli->setPosition(lolip.x,roads.at(i)->platformTop+startPos.y);
+					return true;
+				}
 		}
-	}*/
+	}
 	if(loli->getCurState()==WALK)
 	{
 		for(int i=0;i<size;i++)
 		{
-			if(roads.at(i)!=emptyRoad)
-				if(roads.at(i)->getBoundingBox().containsPoint(lolip))
+			if(!roads.at(i)->empty)
+				if(roads.at(i)->checkPlayerAbove(lolip))
+					return true;
+		}
+	}
+	return false;
+}
+
+bool Stage::checkPlayerCrash()
+{
+	Player* loli = (Player*)Director::getInstance()->getRunningScene()->getChildByTag(1)->getChildByTag(1);
+	Vec2 lolip = loli->getPosition();
+	if(loli->getCurState()==WALK)
+	{
+		for(int i=0;i<size;i++)
+		{
+			if(!roads.at(i)->empty)
+				if(roads.at(i)->checkPlayerCrash(lolip))
 					return true;
 		}
 	}
@@ -93,7 +111,7 @@ void Stage::moveStage(float offset)
 {
 	for(int i=0;i<size;i++)
 	{
-		if(roads.at(i)!=emptyRoad)
+		if(!roads.at(i)->empty)
 			roads.at(i)->setPosition(roads.at(i)->getPosition().x-offset,roads.at(i)->getPosition().y);
 	}
 	startPos.x -= offset;
@@ -104,7 +122,7 @@ void Stage::setPos(Vec2 pos)
 {
 	for(int i=0;i<size;i++)
 	{
-		if(roads.at(i)!=emptyRoad)
+		if(!roads.at(i)->empty)
 		{
 			roads.at(i)->setPosition(roads.at(i)->getContentSize().width/2+roads.at(i)->getContentSize().width*i+pos.x,pos.y);
 		}

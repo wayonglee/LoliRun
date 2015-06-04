@@ -8,6 +8,7 @@ class GameLayer : public cocos2d::Layer
 private:
 	Player* loli;
 	Stage* stage1,* stage2;
+	float runningSpeed;
 public:
 	GameLayer();
 	~GameLayer();
