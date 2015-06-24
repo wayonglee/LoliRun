@@ -9,6 +9,7 @@ enum PlayerState
 	JUMP,
 	JUMPDROP,
 	DROP,
+	HURT,
 	DEAD
 };
 
@@ -27,13 +28,12 @@ public:
 	CC_SYNTHESIZE(bool,stateChangeable,StateChangeable);
 	CC_SYNTHESIZE_RETAIN(cocos2d::Action*, walkAction, WalkAction);//Õ£¡Ù∂Øª≠
 	CC_SYNTHESIZE_RETAIN(cocos2d::Action*, jumpAction, JumpAction);
+	CC_SYNTHESIZE_RETAIN(cocos2d::Action*, hurtAction, HurtAction);
 	CC_SYNTHESIZE_RETAIN(cocos2d::JumpBy*, jumpBy, JumpBy);
 	void changeState(PlayerState state);
 	void jump();
 	void jumpDrop(float);
 	void jumpFinish(float);
-	void drop();
-	void dropFinish(float);
 };
 
 #endif

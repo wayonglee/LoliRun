@@ -19,7 +19,7 @@ bool Road::init()
 	}
 	empty = true;
 	platformTop = 80.0f;
-	platformButtom = 50.0f;
+	platformButtom = 60.0f;
 	return true;
 }
 
@@ -30,8 +30,6 @@ void Road::setImage(int roadNumber,float spriteWidth,float spriteHeight)
 	setAnchorPoint(Vec2(0.5,0));
 	empty = false;
 }
-
-
 
 bool Road::checkPlayerLand(Vec2 lolip)
 {

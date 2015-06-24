@@ -2,8 +2,13 @@
 #include "Player.h"
 #include "Road.h"
 #include "Enemy.h"
+#include "Star.h"
+#include "json/rapidjson.h"
+#include "json/document.h"
 
 USING_NS_CC;
+using namespace rapidjson;
+using namespace std;
 
 Stage::Stage(void)
 {
@@ -12,7 +17,6 @@ Stage::Stage(void)
 
 Stage::~Stage(void)
 {
-
 }
 
 bool Stage::init()
@@ -21,9 +25,11 @@ bool Stage::init()
 	{
 		return false;
 	}
-	size = 10;
+	size = 15;
 	setData(108.0f,126.0f);
 	addRoad();
+	addEnemy();
+	addStar();
 	return true;
 }
 
@@ -35,26 +41,84 @@ void Stage::setData(float sw,float sh)
 
 void Stage::addRoad()
 {
-	int a[] = {2,2,2,2,-1,-1,2,2,2,2};
+	Document doc;//读取json
+	string data = FileUtils::getInstance()->getStringFromFile("stage.json");
+	doc.Parse<0>(data.c_str());
+	rapidjson::Value &v = doc["stage"][1];
 	for(int i=0;i<size;i++)
 	{
 		auto road = Road::create();
-		if(a[i]>0)
+		if (v["roads"][i].GetInt()>0)
 		{
-			road->setImage(a[i],spriteWidth,spriteHeight);
+			road->setImage(v["roads"][i].GetInt(), spriteWidth, spriteHeight);
 		}
 		roads.insert(i,road);
 	}
 }
 
+void Stage::addEnemy()
+{
+	Document doc;//读取json
+	string data = FileUtils::getInstance()->getStringFromFile("stage.json");
+	doc.Parse<0>(data.c_str());
+	rapidjson::Value &v = doc["stage"][1];
+	for (int i = 0; i<size; i++)
+	{
+		auto enemy = Enemy::create();
+		if (v["enemies"][i].GetInt()==1)
+		{
+			enemy->setImage();
+		}
+		enemies.insert(i,enemy);
+	}
+}
+
+void Stage::addStar()
+{
+	Document doc;
+	string data = FileUtils::getInstance()->getStringFromFile("stage.json");
+	doc.Parse<0>(data.c_str());
+	rapidjson::Value &v = doc["stage"][1];
+	for (int i = 0; i<size; i++)
+	{
+		auto star = Star::create();
+		if (v["stars"][i].GetInt() > 0)
+		{
+			star->setImage();
+		}
+		stars.insert(i, star);
+	}
+}
+
 void Stage::addStage(Layer* layer,Vec2 pos)
 {
+	roads.clear();
+	enemies.clear();
+	stars.clear();
+	addRoad();
+	addEnemy();
+	addStar();
+	Document doc;//读取json
+	string data = FileUtils::getInstance()->getStringFromFile("stage.json");
+	doc.Parse<0>(data.c_str());
+	rapidjson::Value &v = doc["stage"][1];
 	for(int i=0;i<size;i++)
 	{
 		if(!roads.at(i)->empty)
 		{
-			roads.at(i)->setPosition(roads.at(i)->getContentSize().width/2+roads.at(i)->getContentSize().width*i+pos.x,pos.y);
+			int height = v["height"][i].GetInt();
+			roads.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + height);
 			layer->addChild(roads.at(i));
+			if (!enemies.at(i)->empty)
+			{
+				enemies.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + roads.at(i)->getContentSize().height - 50 + height);
+				layer->addChild(enemies.at(i));
+			}
+			if (!stars.at(i)->empty)
+			{
+				stars.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + roads.at(i)->getContentSize().height + height);
+				layer->addChild(stars.at(i));
+			}
 		}
 	}
 	startPos = pos;
@@ -74,7 +138,7 @@ bool Stage::checkPlayerAbove()
 				{
 					loli->setStateChangeable(true);
 					loli->changeState(WALK);
-					loli->setPosition(lolip.x,roads.at(i)->platformTop+startPos.y);
+					loli->setPosition(lolip.x, roads.at(i)->platformTop + roads.at(i)->getPosition().y);
 					return true;
 				}
 		}
@@ -95,7 +159,7 @@ bool Stage::checkPlayerCrash()
 {
 	Player* loli = (Player*)Director::getInstance()->getRunningScene()->getChildByTag(1)->getChildByTag(1);
 	Vec2 lolip = loli->getPosition();
-	if(loli->getCurState()==WALK)
+	if (loli->getCurState() == WALK || loli->getCurState() == DROP || loli->getCurState() == JUMPDROP)
 	{
 		for(int i=0;i<size;i++)
 		{
@@ -107,12 +171,46 @@ bool Stage::checkPlayerCrash()
 	return false;
 }
 
+bool Stage::checkPlayerHit()
+{
+	Player* loli = (Player*)Director::getInstance()->getRunningScene()->getChildByTag(1)->getChildByTag(1);
+	Vec2 lolip = loli->getPosition();
+	for (int i = 0; i<size; i++)
+	{
+		if (!enemies.at(i)->empty)
+			if (enemies.at(i)->checkPlayerHit(lolip))
+				return true;
+	}
+	return false;
+}
+
+bool Stage::checkStarHit()
+{
+	Player* loli = (Player*)Director::getInstance()->getRunningScene()->getChildByTag(1)->getChildByTag(1);
+	Vec2 lolip = loli->getPosition();
+	for (int i = 0; i<size; i++)
+	{
+		if (!stars.at(i)->empty)
+			if (stars.at(i)->checkStarHit(lolip))
+			{
+				stars.at(i)->empty = true;
+				stars.at(i)->setVisible(false);
+				return true;
+			}
+	}
+	return false;
+}
+
 void Stage::moveStage(float offset)
 {
 	for(int i=0;i<size;i++)
 	{
 		if(!roads.at(i)->empty)
 			roads.at(i)->setPosition(roads.at(i)->getPosition().x-offset,roads.at(i)->getPosition().y);
+		if (!enemies.at(i)->empty)
+			enemies.at(i)->setPosition(enemies.at(i)->getPosition().x - offset, enemies.at(i)->getPosition().y);
+		if (!stars.at(i)->empty)
+			stars.at(i)->setPosition(stars.at(i)->getPosition().x - offset, stars.at(i)->getPosition().y);
 	}
 	startPos.x -= offset;
 	endPos.x -= offset;
@@ -120,11 +218,26 @@ void Stage::moveStage(float offset)
 
 void Stage::setPos(Vec2 pos)
 {
+	roads.clear();
+	enemies.clear();
+	stars.clear();
+	addRoad();
+	addEnemy();
+	addStar();
+	Document doc;//读取json
+	string data = FileUtils::getInstance()->getStringFromFile("stage.json");
+	doc.Parse<0>(data.c_str());
+	rapidjson::Value &v = doc["stage"][1];
 	for(int i=0;i<size;i++)
 	{
-		if(!roads.at(i)->empty)
+		if (!roads.at(i)->empty)
 		{
-			roads.at(i)->setPosition(roads.at(i)->getContentSize().width/2+roads.at(i)->getContentSize().width*i+pos.x,pos.y);
+			int height = v["height"][i].GetInt();
+			roads.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + height);
+			if (!enemies.at(i)->empty)
+			{
+				enemies.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + roads.at(i)->getContentSize().height - 50 + height );
+			}
 		}
 	}
 	startPos = pos;

@@ -5,6 +5,7 @@ USING_NS_CC;
 Player::Player(void):
 	walkAction(NULL),
 	jumpAction(NULL),
+	hurtAction(NULL),
 	stateChangeable(true),
 	runningSpeed(0.0f)
 {
@@ -15,6 +16,7 @@ Player::~Player(void)
 {
 	CC_SAFE_RELEASE_NULL(walkAction);
 	CC_SAFE_RELEASE_NULL(jumpAction);
+	CC_SAFE_RELEASE_NULL(hurtAction);
 }
 
 bool Player::init()
@@ -24,10 +26,6 @@ bool Player::init()
 		return false;
 	}
 	initWithFile("s_1.png");
-	//auto material = PhysicsMaterial::PhysicsMaterial(100.0f,0.0f,0.0f);
-	//auto body = PhysicsBody::createBox(getContentSize(),material);
-	//body->setMass(PHYSICS_INFINITY);
-	//setPhysicsBody(body);
 	addAnimate();
 	setScale(0.5f);
 	setAnchorPoint(Vec2(0.5f,0));
@@ -57,6 +55,12 @@ void Player::addAnimate()
 	auto jumpAnimate = Animate::create(jumpAnimation);
 	setJumpAction(RepeatForever::create(jumpAnimate));
 
+	pFrames.clear();
+	pFrames.pushBack(SpriteFrame::create("s_hurt.png", Rect(0, 0, 200, 250)));
+
+	auto hurtAnimation = Animation::createWithSpriteFrames(pFrames, 0.1);
+	auto hurtAnimate = Animate::create(hurtAnimation);
+	setHurtAction(RepeatForever::create(hurtAnimate));
 }
 
 void Player::updateSelf(float)
@@ -65,22 +69,23 @@ void Player::updateSelf(float)
 	{
 		setPosition(getPosition().x-runningSpeed,getPosition().y);
 	}
-	else if(getPosition().x<150)
+	else if(getPosition().x<150&&curState==WALK)
 	{
-		setPosition(getPosition().x+2,getPosition().y);
+		setPosition(getPosition().x+1.5,getPosition().y);
 	}
 }
 
 void Player::changeState(PlayerState state)
 {
-	if(stateChangeable || state==WALK)
+	if(stateChangeable || state==WALK || state==DEAD ||state==HURT)
 	{
 		switch(state)
 		{
 		case WALK:stopAllActions(); runAction(walkAction); break;
-		case JUMP:stopAllActions(); runAction(JumpBy::create(1.5f,Vec2(0,-200),250,1));runAction(jumpAction);stateChangeable = false; jump();break;
-		case DROP:runAction(MoveBy::create(2.0f,Vec2(0,-200))); drop(); break;
-		case DEAD:stateChangeable = false; break;
+		case JUMP:stopAllActions(); runAction(JumpBy::create(1.5f,Vec2(0,-300),200,1));runAction(jumpAction);stateChangeable = false; jump();break;
+		case DROP:runAction(MoveBy::create(2.0f,Vec2(0,-200))); break;
+		case HURT: stopAllActions(); runAction(hurtAction); stateChangeable = false; break;
+		case DEAD:stopAllActions(); stateChangeable = false; break;
 		}
 		curState = state;
 	}
@@ -89,12 +94,13 @@ void Player::changeState(PlayerState state)
 void Player::jump()
 {
 	this->scheduleOnce(schedule_selector(Player::jumpDrop),0.5f);
-	this->scheduleOnce(schedule_selector(Player::jumpFinish),1.5f);
+	//this->scheduleOnce(schedule_selector(Player::jumpFinish),3.5f);
 }
 
 void Player::jumpDrop(float)
 {
-	curState=JUMPDROP;
+	if (curState==JUMP)
+		curState = JUMPDROP;
 }
 
 void Player::jumpFinish(float)
@@ -104,15 +110,4 @@ void Player::jumpFinish(float)
 		stateChangeable = true;
 		changeState(WALK);
 	}
-}
-
-void Player::drop()
-{
-	this->scheduleOnce(schedule_selector(Player::dropFinish),2.0f);
-}
-
-void Player::dropFinish(float)
-{
-	if(curState==DROP&&getPosition().y<0)
-	changeState(DEAD);
 }

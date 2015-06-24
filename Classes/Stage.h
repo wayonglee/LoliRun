@@ -5,11 +5,14 @@
 
 class Road;
 class Enemy;
+class Star;
 
 class Stage : public cocos2d::Sprite
 {
 private:
 	cocos2d::Vector<Road*> roads;
+	cocos2d::Vector<Enemy*> enemies;
+	cocos2d::Vector<Star*> stars;
 	Road* emptyRoad;
 	int size;
 	float spriteWidth;
@@ -23,9 +26,13 @@ public:
 	virtual bool init();
 	void setData(float sw,float sh);
 	void addRoad();
+	void addEnemy();
+	void addStar();
 	void addStage(cocos2d::Layer*,cocos2d::Vec2 position);
 	bool checkPlayerAbove();
 	bool checkPlayerCrash();
+	bool checkPlayerHit();
+	bool checkStarHit();
 	void moveStage(float offset);
 	void setPos(cocos2d::Vec2 position);
 	void checkJump();

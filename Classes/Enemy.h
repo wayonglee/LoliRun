@@ -6,10 +6,13 @@
 class Enemy : public cocos2d::Sprite
 {
 public:
+	bool empty;
 	Enemy(void);
 	~Enemy(void);
 	CREATE_FUNC(Enemy);
 	virtual bool init();
+	void setImage();
+	bool checkPlayerHit(cocos2d::Vec2 lolip);
 };
 
 #endif
