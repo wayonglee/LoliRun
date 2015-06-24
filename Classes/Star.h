@@ -6,11 +6,12 @@ class Star:public cocos2d::Sprite
 {
 public:
 	bool empty;
+	int height;
 	Star();
 	~Star();
 	CREATE_FUNC(Star);
 	virtual bool init();
-	void setImage();
+	void setImage(int h);
 	bool checkStarHit(cocos2d::Vec2 lolip);
 };
 #endif

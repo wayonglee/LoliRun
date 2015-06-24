@@ -27,9 +27,7 @@ bool Stage::init()
 	}
 	size = 15;
 	setData(108.0f,126.0f);
-	addRoad();
-	addEnemy();
-	addStar();
+	random = 5;
 	return true;
 }
 
@@ -44,7 +42,7 @@ void Stage::addRoad()
 	Document doc;//读取json
 	string data = FileUtils::getInstance()->getStringFromFile("stage.json");
 	doc.Parse<0>(data.c_str());
-	rapidjson::Value &v = doc["stage"][1];
+	rapidjson::Value &v = doc["stage"][random];
 	for(int i=0;i<size;i++)
 	{
 		auto road = Road::create();
@@ -61,7 +59,7 @@ void Stage::addEnemy()
 	Document doc;//读取json
 	string data = FileUtils::getInstance()->getStringFromFile("stage.json");
 	doc.Parse<0>(data.c_str());
-	rapidjson::Value &v = doc["stage"][1];
+	rapidjson::Value &v = doc["stage"][random];
 	for (int i = 0; i<size; i++)
 	{
 		auto enemy = Enemy::create();
@@ -78,13 +76,13 @@ void Stage::addStar()
 	Document doc;
 	string data = FileUtils::getInstance()->getStringFromFile("stage.json");
 	doc.Parse<0>(data.c_str());
-	rapidjson::Value &v = doc["stage"][1];
+	rapidjson::Value &v = doc["stage"][random];
 	for (int i = 0; i<size; i++)
 	{
 		auto star = Star::create();
 		if (v["stars"][i].GetInt() > 0)
 		{
-			star->setImage();
+			star->setImage(v["stars"][i].GetInt());
 		}
 		stars.insert(i, star);
 	}
@@ -92,6 +90,7 @@ void Stage::addStar()
 
 void Stage::addStage(Layer* layer,Vec2 pos)
 {
+	//changeRandom(5);
 	roads.clear();
 	enemies.clear();
 	stars.clear();
@@ -101,7 +100,7 @@ void Stage::addStage(Layer* layer,Vec2 pos)
 	Document doc;//读取json
 	string data = FileUtils::getInstance()->getStringFromFile("stage.json");
 	doc.Parse<0>(data.c_str());
-	rapidjson::Value &v = doc["stage"][1];
+	rapidjson::Value &v = doc["stage"][random];
 	for(int i=0;i<size;i++)
 	{
 		if(!roads.at(i)->empty)
@@ -116,7 +115,7 @@ void Stage::addStage(Layer* layer,Vec2 pos)
 			}
 			if (!stars.at(i)->empty)
 			{
-				stars.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + roads.at(i)->getContentSize().height + height);
+				stars.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + roads.at(i)->getContentSize().height + height + (stars.at(i)->height-1) * 40);
 				layer->addChild(stars.at(i));
 			}
 		}
@@ -216,35 +215,8 @@ void Stage::moveStage(float offset)
 	endPos.x -= offset;
 }
 
-void Stage::setPos(Vec2 pos)
+void Stage::changeRandom(int max)
 {
-	roads.clear();
-	enemies.clear();
-	stars.clear();
-	addRoad();
-	addEnemy();
-	addStar();
-	Document doc;//读取json
-	string data = FileUtils::getInstance()->getStringFromFile("stage.json");
-	doc.Parse<0>(data.c_str());
-	rapidjson::Value &v = doc["stage"][1];
-	for(int i=0;i<size;i++)
-	{
-		if (!roads.at(i)->empty)
-		{
-			int height = v["height"][i].GetInt();
-			roads.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + height);
-			if (!enemies.at(i)->empty)
-			{
-				enemies.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + roads.at(i)->getContentSize().height - 50 + height );
-			}
-		}
-	}
-	startPos = pos;
-	endPos = Vec2(pos.x + spriteWidth * size,pos.y);
-}
-
-void Stage::checkJump()
-{
-	
+	srand(time(NULL));
+	random = RandomHelper::random_int(1, max);
 }

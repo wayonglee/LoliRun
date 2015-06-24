@@ -1,8 +1,10 @@
 #include"GameLayer.h"
 #include"Player.h"
 #include"Stage.h"
+#include"ScoreLabel.h"
 
 USING_NS_CC;
+using namespace std;
 
 GameLayer::GameLayer()
 {
@@ -21,6 +23,11 @@ bool GameLayer::init()
 		return false;
 	}
 	auto visibleSize = Director::getInstance()->getVisibleSize();
+	score = 0;
+	scoreLabel = ScoreLabel::create();
+	scoreLabel->setPosition(visibleSize.width - 150, visibleSize.height - 100);
+	scoreLabel->setScore(score);
+	this->addChild(scoreLabel);//计分榜
 
 	runningSpeed = 5.0f;
 
@@ -40,6 +47,7 @@ bool GameLayer::init()
 	stage1->addStage(this,Vec2(0,0));
 	stage2->addStage(this,Vec2(stage1->getEndPos().x,0));
 	this->schedule(schedule_selector(GameLayer::updateSelf));
+	this->schedule(schedule_selector(GameLayer::updateScore),0.1f);
 	return true;
 }
 
@@ -51,24 +59,37 @@ bool GameLayer::onTouchBegan(Touch* pTouch,Event* pEvent)
 
 void GameLayer::updateSelf(float)
 {
+	score++;
 	if (loli->getCurState() != DEAD&&loli->getCurState() != HURT)
 	{
 		stage1->moveStage(5.0f);
 		stage2->moveStage(5.0f);
-		if(stage1->getEndPos().x<0)
-			stage1->addStage(this,Vec2(stage2->getEndPos().x,0));
-		if(stage2->getEndPos().x<0)
-			stage2->addStage(this,Vec2(stage1->getEndPos().x,0));//移动关卡
-		if(!stage1->checkPlayerAbove()&&!stage2->checkPlayerAbove())
+		if (stage1->getEndPos().x < 0)
+			stage1->addStage(this, Vec2(stage2->getEndPos().x, 0));
+		if (stage2->getEndPos().x < 0)
+			stage2->addStage(this, Vec2(stage1->getEndPos().x, 0));//移动关卡
+		if (!stage1->checkPlayerAbove() && !stage2->checkPlayerAbove())
 			loli->changeState(DROP);
 		if (stage1->checkPlayerHit() || stage2->checkPlayerHit())
 			loli->changeState(HURT);
-		if(stage1->checkPlayerCrash()||stage2->checkPlayerCrash())
+		if (stage1->checkPlayerCrash() || stage2->checkPlayerCrash())
 			loli->crash = true;
 		else loli->crash = false;
 		if (loli->getPosition().y <= -loli->getContentSize().height*loli->getScale() || loli->getPosition().x <= -loli->getContentSize().width*loli->getScale())
 			loli->changeState(DEAD);
-		stage1->checkStarHit();
-		stage2->checkStarHit();
+		if (stage1->checkStarHit() || stage2->checkStarHit())
+		{
+			score+=500;
+		}
 	}
+}
+
+void GameLayer::updateScore(float)
+{
+	scoreLabel->setScore(score);
+}
+
+int GameLayer::getFinalScore()
+{
+	return score;
 }

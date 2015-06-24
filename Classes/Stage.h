@@ -15,6 +15,7 @@ private:
 	cocos2d::Vector<Star*> stars;
 	Road* emptyRoad;
 	int size;
+	int random;
 	float spriteWidth;
 	float spriteHeight;
 public:
@@ -34,8 +35,7 @@ public:
 	bool checkPlayerHit();
 	bool checkStarHit();
 	void moveStage(float offset);
-	void setPos(cocos2d::Vec2 position);
-	void checkJump();
+	void changeRandom(int max);
 };
 
 #endif
