@@ -65,30 +65,36 @@ void Player::addAnimate()
 
 void Player::updateSelf(float)
 {
-	if(crash)
+	if (curState != DEAD)
 	{
-		setPosition(getPosition().x-runningSpeed,getPosition().y);
+		if (crash)
+		{
+			setPosition(getPosition().x - runningSpeed, getPosition().y);
+		}
+		else if (getPosition().x < 150 && curState == WALK)
+		{
+			setPosition(getPosition().x + 1.5, getPosition().y);
+		}
 	}
-	else if(getPosition().x<150&&curState==WALK)
-	{
-		setPosition(getPosition().x+1.5,getPosition().y);
-	}
+	if (this->getPosition().y <= (-this->getContentSize().height*this->getScale()+20) || this->getPosition().x <= (-this->getContentSize().width*this->getScale()))
+		this->changeState(DEAD);
 }
 
 void Player::changeState(PlayerState state)
 {
-	if(stateChangeable || state==WALK || state==DEAD ||state==HURT)
-	{
-		switch(state)
+	if (curState != DEAD&&curState != HURT)
+		if(stateChangeable || state==WALK || state==DEAD ||state==HURT)
 		{
-		case WALK:stopAllActions(); runAction(walkAction); break;
-		case JUMP:stopAllActions(); runAction(JumpBy::create(1.5f,Vec2(0,-300),200,1));runAction(jumpAction);stateChangeable = false; jump();break;
-		case DROP:runAction(MoveBy::create(2.0f,Vec2(0,-200))); break;
-		case HURT: stopAllActions(); runAction(hurtAction); stateChangeable = false; break;
-		case DEAD:stopAllActions(); stateChangeable = false; break;
+			switch(state)
+			{
+			case WALK:stopAllActions(); runAction(walkAction); break;
+			case JUMP:stopAllActions(); runAction(JumpBy::create(1.5f,Vec2(0,-300),200,1));runAction(jumpAction);stateChangeable = false; jump();break;
+			case DROP:runAction(MoveBy::create(3.0f,Vec2(0,-250))); break;
+			case HURT: stopAllActions(); runAction(hurtAction); stateChangeable = false; break;
+			case DEAD:stopAllActions(); stateChangeable = false; break;
+			}
+			curState = state;
 		}
-		curState = state;
-	}
 }
 
 void Player::jump()

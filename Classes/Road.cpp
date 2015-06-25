@@ -29,6 +29,8 @@ void Road::setImage(int roadNumber,float spriteWidth,float spriteHeight)
 	initWithFile(roadName,Rect(0,0,spriteWidth,spriteHeight));
 	setAnchorPoint(Vec2(0.5,0));
 	empty = false;
+	if (roadNumber == 3)
+		setFlippedX(true);
 }
 
 bool Road::checkPlayerLand(Vec2 lolip)
@@ -48,6 +50,8 @@ bool Road::checkPlayerAbove(Vec2 lolip)
 bool Road::checkPlayerCrash(Vec2 lolip)
 {
 	if(this->getBoundingBox().containsPoint(Vec2(lolip.x+50,lolip.y))&&lolip.y<platformTop+getPosition().y)
+		return true;
+	if (this->getBoundingBox().containsPoint(Vec2(lolip.x + 50, lolip.y + 75)) && lolip.y<platformTop + getPosition().y)
 		return true;
 	else return false;
 }

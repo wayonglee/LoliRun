@@ -59,9 +59,9 @@ bool GameLayer::onTouchBegan(Touch* pTouch,Event* pEvent)
 
 void GameLayer::updateSelf(float)
 {
-	score++;
 	if (loli->getCurState() != DEAD&&loli->getCurState() != HURT)
 	{
+		score++;
 		stage1->moveStage(5.0f);
 		stage2->moveStage(5.0f);
 		if (stage1->getEndPos().x < 0)
@@ -75,11 +75,9 @@ void GameLayer::updateSelf(float)
 		if (stage1->checkPlayerCrash() || stage2->checkPlayerCrash())
 			loli->crash = true;
 		else loli->crash = false;
-		if (loli->getPosition().y <= -loli->getContentSize().height*loli->getScale() || loli->getPosition().x <= -loli->getContentSize().width*loli->getScale())
-			loli->changeState(DEAD);
 		if (stage1->checkStarHit() || stage2->checkStarHit())
 		{
-			score+=500;
+			score+=200;
 		}
 	}
 }

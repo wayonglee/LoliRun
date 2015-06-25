@@ -90,7 +90,7 @@ void Stage::addStar()
 
 void Stage::addStage(Layer* layer,Vec2 pos)
 {
-	//changeRandom(5);
+	changeRandom(2,7);
 	roads.clear();
 	enemies.clear();
 	stars.clear();
@@ -103,9 +103,9 @@ void Stage::addStage(Layer* layer,Vec2 pos)
 	rapidjson::Value &v = doc["stage"][random];
 	for(int i=0;i<size;i++)
 	{
+		int height = v["height"][i].GetInt();
 		if(!roads.at(i)->empty)
 		{
-			int height = v["height"][i].GetInt();
 			roads.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + height);
 			layer->addChild(roads.at(i));
 			if (!enemies.at(i)->empty)
@@ -116,6 +116,14 @@ void Stage::addStage(Layer* layer,Vec2 pos)
 			if (!stars.at(i)->empty)
 			{
 				stars.at(i)->setPosition(roads.at(i)->getContentSize().width / 2 + roads.at(i)->getContentSize().width*i + pos.x, pos.y + roads.at(i)->getContentSize().height + height + (stars.at(i)->height-1) * 40);
+				layer->addChild(stars.at(i));
+			}
+		}
+		else
+		{
+			if (!stars.at(i)->empty)
+			{
+				stars.at(i)->setPosition(roads.at(1)->getContentSize().width / 2 + roads.at(1)->getContentSize().width*i + pos.x, pos.y + roads.at(1)->getContentSize().height + height + (stars.at(i)->height - 1) * 40);
 				layer->addChild(stars.at(i));
 			}
 		}
@@ -215,8 +223,8 @@ void Stage::moveStage(float offset)
 	endPos.x -= offset;
 }
 
-void Stage::changeRandom(int max)
+void Stage::changeRandom(int min,int max)
 {
 	srand(time(NULL));
-	random = RandomHelper::random_int(1, max);
+	random = RandomHelper::random_int(min, max);
 }

@@ -35,7 +35,7 @@ public:
 	bool checkPlayerHit();
 	bool checkStarHit();
 	void moveStage(float offset);
-	void changeRandom(int max);
+	void changeRandom(int min,int max);
 };
 
 #endif
