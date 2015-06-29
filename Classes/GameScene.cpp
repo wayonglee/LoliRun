@@ -23,7 +23,7 @@ bool GameScene::init()
 	auto backgroundLayer = BackgroundLayer::create();
 	auto gameLayer = GameLayer::create();
 	getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
-	addChild(backgroundLayer,0);
+	addChild(backgroundLayer,0,0);
 	addChild(gameLayer,1,1);
 
 	return true;

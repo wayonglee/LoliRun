@@ -13,6 +13,7 @@ public:
 	virtual bool init();
 	void addBackground();
 	void updateSelf(float);
+	void unRoll();
 };
 
 #endif

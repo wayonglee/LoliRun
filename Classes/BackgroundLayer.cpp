@@ -68,3 +68,8 @@ void BackgroundLayer::updateSelf(float)
 		}
 	}
 }
+
+void BackgroundLayer::unRoll()
+{
+	this->unscheduleAllCallbacks();
+}

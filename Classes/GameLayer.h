@@ -21,6 +21,7 @@ public:
 	void updateSelf(float);
 	void updateScore(float);
 	int getFinalScore();
+	void gameOver();
 };
 
 #endif

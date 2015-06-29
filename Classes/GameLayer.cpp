@@ -2,6 +2,7 @@
 #include"Player.h"
 #include"Stage.h"
 #include"ScoreLabel.h"
+#include"GameOverLayer.h"
 
 USING_NS_CC;
 using namespace std;
@@ -80,6 +81,10 @@ void GameLayer::updateSelf(float)
 			score+=200;
 		}
 	}
+	if (loli->getCurState() == DEAD||loli->getCurState() == HURT)
+	{
+		gameOver();
+	}
 }
 
 void GameLayer::updateScore(float)
@@ -90,4 +95,13 @@ void GameLayer::updateScore(float)
 int GameLayer::getFinalScore()
 {
 	return score;
+}
+
+void GameLayer::gameOver()
+{
+	auto gameOverLayer = GameOverLayer::create();
+	auto parent = this->getParent();
+	parent->addChild(gameOverLayer,10);
+	gameOverLayer->stopGame();
+	this->unscheduleAllCallbacks();
 }
