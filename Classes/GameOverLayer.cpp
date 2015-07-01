@@ -1,5 +1,6 @@
 #include "GameOverLayer.h"
 #include "BackgroundLayer.h"
+#include "DAO.h"
 
 USING_NS_CC;
 

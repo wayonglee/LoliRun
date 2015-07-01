@@ -49,9 +49,9 @@ bool Road::checkPlayerAbove(Vec2 lolip)
 
 bool Road::checkPlayerCrash(Vec2 lolip)
 {
-	if(this->getBoundingBox().containsPoint(Vec2(lolip.x+50,lolip.y))&&lolip.y<platformTop+getPosition().y)
+	if(this->getBoundingBox().containsPoint(Vec2(lolip.x+25,lolip.y))&&lolip.y<platformTop+getPosition().y)
 		return true;
-	if (this->getBoundingBox().containsPoint(Vec2(lolip.x + 50, lolip.y + 75)) && lolip.y<platformTop + getPosition().y)
+	if (this->getBoundingBox().containsPoint(Vec2(lolip.x + 25, lolip.y + 75)) && lolip.y<platformTop + getPosition().y)
 		return true;
 	else return false;
 }

@@ -3,6 +3,8 @@
 #include"Stage.h"
 #include"ScoreLabel.h"
 #include"GameOverLayer.h"
+#include"DAO.h"
+
 
 USING_NS_CC;
 using namespace std;
@@ -99,9 +101,11 @@ int GameLayer::getFinalScore()
 
 void GameLayer::gameOver()
 {
+	scoreLabel->setScore(score);
 	auto gameOverLayer = GameOverLayer::create();
 	auto parent = this->getParent();
 	parent->addChild(gameOverLayer,10);
 	gameOverLayer->stopGame();
 	this->unscheduleAllCallbacks();
+	DAO::create(score);
 }
